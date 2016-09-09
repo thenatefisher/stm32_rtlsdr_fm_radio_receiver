@@ -19,7 +19,8 @@ int main(void) {
     // configure the system clock to 216 MHz
     SystemClock_Config();
 
-    // init usb host library
+    // init usb host library, set host process signaling
+    //  callback to USBH_UserProcess(); set 'driver id' to 0
     USBH_Init(&hUSBHost, USBH_UserProcess, 0);
 
     // init usb host process
@@ -30,6 +31,24 @@ int main(void) {
 
         // usb host background task
         USBH_Process(&hUSBHost);
+
+        // usb pipe init
+        if (hUSBHost.gState == HOST_CHECK_CLASS && !isUSBConfigComplete) {
+
+            InPipe = USBH_AllocPipe(&hUSBHost, USB_PIPE_NUMBER);
+
+            USBH_StatusTypeDef status = USBH_OpenPipe(&hUSBHost,
+                          InPipe,
+                          USB_PIPE_NUMBER, // pipe number
+                          hUSBHost.device.address,
+                          hUSBHost.device.speed,
+                          USB_EP_TYPE_BULK,
+                          USBH_MAX_DATA_BUFFER); // max packet size:
+                                                 // 64 bytes for FS and 512 bytes for HS
+
+            if (status == USBH_OK) isUSBConfigComplete = 1;
+
+        }
 
     }
 

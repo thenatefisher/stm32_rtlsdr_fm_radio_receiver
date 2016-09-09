@@ -273,14 +273,14 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost,
                                     uint8_t ep_type,
                                     uint16_t mps)
 {
-  HAL_HCD_HC_Init(phost->pData,
+  USBH_StatusTypeDef status = HAL_HCD_HC_Init(phost->pData,
                   pipe,
                   epnum,
                   dev_address,
                   speed,
                   ep_type,
                   mps);
-  return USBH_OK;
+  return status;
 }
 
 /**
