@@ -1,54 +1,8 @@
-/**
-  ******************************************************************************
-  * @file    USB_Host/MSC_Standalone/Src/usbh_conf.c
-  * @author  MCD Application Team
-  * @version V1.0.3
-  * @date    22-April-2016
-  * @brief   USB Host configuration file.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2016 STMicroelectronics International N.V. 
-  * All rights reserved.</center></h2>
-  *
-  * Redistribution and use in source and binary forms, with or without 
-  * modification, are permitted, provided that the following conditions are met:
-  *
-  * 1. Redistribution of source code must retain the above copyright notice, 
-  *    this list of conditions and the following disclaimer.
-  * 2. Redistributions in binary form must reproduce the above copyright notice,
-  *    this list of conditions and the following disclaimer in the documentation
-  *    and/or other materials provided with the distribution.
-  * 3. Neither the name of STMicroelectronics nor the names of other 
-  *    contributors to this software may be used to endorse or promote products 
-  *    derived from this software without specific written permission.
-  * 4. This software, including modifications and/or derivative works of this 
-  *    software, must execute solely and exclusively on microcontroller or
-  *    microprocessor devices manufactured by or for STMicroelectronics.
-  * 5. Redistribution and use of this software other than as permitted under 
-  *    this license is void and will automatically terminate your rights under 
-  *    this license. 
-  *
-  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
-  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
-  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
-  * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
-  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
-  * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
-  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
-  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  *
-  ******************************************************************************
-  */
-
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
+#include "stm32746g_discovery.h"
 #include "usbh_core.h"
-#include "main.h"
+#include "stdio.h"
 
 HCD_HandleTypeDef hhcd;
 
@@ -63,105 +17,72 @@ HCD_HandleTypeDef hhcd;
 void HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd)
 {
   GPIO_InitTypeDef  GPIO_InitStruct;
-  
-  if(hhcd->Instance == USB_OTG_FS)
+
+  if(hhcd->Instance == USB_OTG_HS)
   {
-    /* Configure USB FS GPIOs */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOD_CLK_ENABLE();
-    
-    GPIO_InitStruct.Pin = (GPIO_PIN_11 | GPIO_PIN_12);
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
-    
-    GPIO_InitStruct.Pin = GPIO_PIN_10;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
-    
-    /* Configure POWER_SWITCH IO pin */
-    GPIO_InitStruct.Pin = GPIO_PIN_5;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct); 
-    
-    /* Enable USB FS Clocks */ 
-    __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
-    
-    /* Set USBFS Interrupt priority */
-    HAL_NVIC_SetPriority(OTG_FS_IRQn, 6, 0);
-    
-    /* Enable USBFS Interrupt */
-    HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
-  }
-  else if(hhcd->Instance == USB_OTG_HS)
-  {
+    printf("USB HS INIT\n");
     /* Configure USB HS GPIOs */
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOH_CLK_ENABLE();
-    
+
     /* CLK */
     GPIO_InitStruct.Pin = GPIO_PIN_5;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
-    
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
     /* D0 */
     GPIO_InitStruct.Pin = GPIO_PIN_3;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
-    
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
     /* D1 D2 D3 D4 D5 D6 D7 */
-    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_5 |\
+    GPIO_InitStruct.Pin = GPIO_PIN_0  | GPIO_PIN_1  | GPIO_PIN_5 |\
       GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    
+
     /* STP */
     GPIO_InitStruct.Pin = GPIO_PIN_0;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-    
+
     /* NXT */
     GPIO_InitStruct.Pin = GPIO_PIN_4;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-    HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);   
-    
+    HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+
     /* DIR */
     GPIO_InitStruct.Pin = GPIO_PIN_2;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-    
     __HAL_RCC_USB_OTG_HS_ULPI_CLK_ENABLE();
-    
-    /* Enable USB HS Clocks */ 
+
+    /* Enable USB HS Clocks */
     __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
-    
-    /* Set USBHS Interrupt priority */
+
+    /* Set USBHS Interrupt to the lowest priority */
     HAL_NVIC_SetPriority(OTG_HS_IRQn, 6, 0);
-    
+
     /* Enable USBHS Interrupt */
     HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
   }
+
 }
 
 /**
@@ -171,14 +92,10 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd)
   */
 void HAL_HCD_MspDeInit(HCD_HandleTypeDef *hhcd)
 {
-  if(hhcd->Instance == USB_OTG_FS)
+
+  if(hhcd->Instance == USB_OTG_HS)
   {
-    /* Disable USB FS Clocks */ 
-    __HAL_RCC_USB_OTG_FS_CLK_DISABLE();
-  }
-  else if(hhcd->Instance == USB_OTG_HS)
-  {
-    /* Disable USB HS Clocks */ 
+    /* Disable USB HS Clocks */
     __HAL_RCC_USB_OTG_HS_CLK_DISABLE();
     __HAL_RCC_USB_OTG_HS_ULPI_CLK_DISABLE();
   }
@@ -206,12 +123,6 @@ void HAL_HCD_SOF_Callback(HCD_HandleTypeDef *hhcd)
 void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd)
 {
   USBH_LL_Connect(hhcd->pData);
-  
-  /* Register the file system object to the FatFs module */
-  if(f_mount(&USBH_fatfs, "", 0) != FR_OK)
-  {  
-    LCD_ErrLog("ERROR : Cannot Initialize FatFs! \n");
-  }
 }
 
 /**
@@ -222,75 +133,39 @@ void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd)
 void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd)
 {
   USBH_LL_Disconnect(hhcd->pData);
-} 
-
-
-/**
-  * @brief  Notify URB state change callback.
-  * @param  hhcd: HCD handle
-  * @param  chnum: Channel number 
-  * @param  urb_state: URB State
-  * @retval None
-  */
-void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum, HCD_URBStateTypeDef urb_state)
-{
-  /* To be used with OS to sync URB state with the global state machine */
 }
 
 /*******************************************************************************
                        LL Driver Interface (USB Host Library --> HCD)
 *******************************************************************************/
 /**
-  * @brief  USBH_LL_Init 
+  * @brief  USBH_LL_Init
   *         Initialize the Low Level portion of the Host driver.
   * @param  phost: Host handle
   * @retval USBH Status
   */
 USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 {
-#ifdef USE_USB_FS  
-  /* Set the LL Driver parameters */
-  hhcd.Instance = USB_OTG_FS;
-  hhcd.Init.Host_channels = 11; 
-  hhcd.Init.dma_enable = 0;
-  hhcd.Init.low_power_enable = 0;
-  hhcd.Init.phy_itface = HCD_PHY_EMBEDDED; 
-  hhcd.Init.Sof_enable = 0;
-  hhcd.Init.speed = HCD_SPEED_FULL;
-  hhcd.Init.vbus_sensing_enable = 0;
-  hhcd.Init.lpm_enable = 0;
-  
-  /* Link the driver to the stack */
-  hhcd.pData = phost;
-  phost->pData = &hhcd;
-  
-  /* Initialize the LL Driver */
-  HAL_HCD_Init(&hhcd);
-#endif
 
-#ifdef USE_USB_HS
   /* Set the LL driver parameters */
   hhcd.Instance = USB_OTG_HS;
-  hhcd.Init.Host_channels = 11; 
-  hhcd.Init.dma_enable = 1;
+  hhcd.Init.Host_channels = 11;
+  hhcd.Init.dma_enable = 0;
   hhcd.Init.low_power_enable = 0;
   hhcd.Init.phy_itface = HCD_PHY_ULPI;
   hhcd.Init.Sof_enable = 0;
   hhcd.Init.speed = HCD_SPEED_HIGH;
   hhcd.Init.vbus_sensing_enable = 0;
-  hhcd.Init.use_external_vbus = 1;
-  hhcd.Init.lpm_enable = 0;
-  
+  hhcd.Init.use_external_vbus = 0;
+
   /* Link the driver to the stack */
   hhcd.pData = phost;
   phost->pData = &hhcd;
-  
   /* Initialize the LL driver */
   HAL_HCD_Init(&hhcd);
-  
-#endif /*USE_USB_HS*/ 
+
   USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(&hhcd));
-  
+
   return USBH_OK;
 }
 
@@ -302,18 +177,18 @@ USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 USBH_StatusTypeDef USBH_LL_DeInit(USBH_HandleTypeDef *phost)
 {
   HAL_HCD_DeInit(phost->pData);
-  return USBH_OK; 
+  return USBH_OK;
 }
 
 /**
-  * @brief  Starts the Low Level portion of the Host driver.   
+  * @brief  Starts the Low Level portion of the Host driver.
   * @param  phost: Host handle
   * @retval USBH Status
   */
 USBH_StatusTypeDef USBH_LL_Start(USBH_HandleTypeDef *phost)
 {
   HAL_HCD_Start(phost->pData);
-  return USBH_OK; 
+  return USBH_OK;
 }
 
 /**
@@ -324,7 +199,7 @@ USBH_StatusTypeDef USBH_LL_Start(USBH_HandleTypeDef *phost)
 USBH_StatusTypeDef USBH_LL_Stop(USBH_HandleTypeDef *phost)
 {
   HAL_HCD_Stop(phost->pData);
-  return USBH_OK; 
+  return USBH_OK;
 }
 
 /**
@@ -335,21 +210,21 @@ USBH_StatusTypeDef USBH_LL_Stop(USBH_HandleTypeDef *phost)
 USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 {
   USBH_SpeedTypeDef speed = USBH_SPEED_FULL;
-  
+
   switch (HAL_HCD_GetCurrentSpeed(phost->pData))
   {
-  case 0: 
+  case 0:
     speed = USBH_SPEED_HIGH;
     break;
-    
-  case 1: 
+
+  case 1:
     speed = USBH_SPEED_FULL;
     break;
-    
-  case 2: 
+
+  case 2:
     speed = USBH_SPEED_LOW;
     break;
-    
+
   default:
     speed = USBH_SPEED_FULL;
     break;
@@ -365,13 +240,13 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 USBH_StatusTypeDef USBH_LL_ResetPort (USBH_HandleTypeDef *phost)
 {
   HAL_HCD_ResetPort(phost->pData);
-  return USBH_OK; 
+  return USBH_OK;
 }
 
 /**
   * @brief  Returns the last transferred packet size.
   * @param  phost: Host handle
-  * @param  pipe: Pipe index   
+  * @param  pipe: Pipe index
   * @retval Packet Size
   */
 uint32_t USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost, uint8_t pipe)
@@ -385,12 +260,12 @@ uint32_t USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost, uint8_t pipe)
   * @param  pipe: Pipe index
   * @param  epnum: Endpoint Number
   * @param  dev_address: Device USB address
-  * @param  speed: Device Speed 
+  * @param  speed: Device Speed
   * @param  ep_type: Endpoint Type
   * @param  mps: Endpoint Max Packet Size
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, 
+USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost,
                                     uint8_t pipe,
                                     uint8_t epnum,
                                     uint8_t dev_address,
@@ -405,7 +280,7 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost,
                   speed,
                   ep_type,
                   mps);
-  return USBH_OK; 
+  return USBH_OK;
 }
 
 /**
@@ -423,11 +298,11 @@ USBH_StatusTypeDef USBH_LL_ClosePipe(USBH_HandleTypeDef *phost, uint8_t pipe)
 /**
   * @brief  Submits a new URB to the low level driver.
   * @param  phost: Host handle
-  * @param  pipe: Pipe index    
+  * @param  pipe: Pipe index
   *          This parameter can be a value from 1 to 15
   * @param  direction: Channel number
   *          This parameter can be one of these values:
-  *           0: Output 
+  *           0: Output
   *           1: Input
   * @param  ep_type: Endpoint Type
   *          This parameter can be one of these values:
@@ -443,28 +318,28 @@ USBH_StatusTypeDef USBH_LL_ClosePipe(USBH_HandleTypeDef *phost, uint8_t pipe)
   * @param  length: length of URB data
   * @param  do_ping: activate do ping protocol (for high speed only)
   *          This parameter can be one of these values:
-  *           0: do ping inactive 
-  *           1: do ping active 
+  *           0: do ping inactive
+  *           1: do ping active
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, 
-                                     uint8_t pipe, 
+USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost,
+                                     uint8_t pipe,
                                      uint8_t direction,
-                                     uint8_t ep_type,  
-                                     uint8_t token, 
-                                     uint8_t* pbuff, 
+                                     uint8_t ep_type,
+                                     uint8_t token,
+                                     uint8_t* pbuff,
                                      uint16_t length,
-                                     uint8_t do_ping) 
+                                     uint8_t do_ping)
 {
   HAL_HCD_HC_SubmitRequest(phost->pData,
-                           pipe, 
+                           pipe,
                            direction,
-                           ep_type,  
-                           token, 
-                           pbuff, 
+                           ep_type,
+                           token,
+                           pbuff,
                            length,
                            do_ping);
-  return USBH_OK;   
+  return USBH_OK;
 }
 
 /**
@@ -477,11 +352,11 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost,
   *            @arg URB_IDLE
   *            @arg URB_DONE
   *            @arg URB_NOTREADY
-  *            @arg URB_NYET 
-  *            @arg URB_ERROR  
-  *            @arg URB_STALL      
+  *            @arg URB_NYET
+  *            @arg URB_ERROR
+  *            @arg URB_STALL
   */
-USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost, uint8_t pipe) 
+USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost, uint8_t pipe)
 {
   return (USBH_URBStateTypeDef)HAL_HCD_HC_GetURBState (phost->pData, pipe);
 }
@@ -491,36 +366,29 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost, uint8_t pipe
   * @param  phost: Host handle
   * @param  state: VBUS state
   *          This parameter can be one of these values:
-  *           0: VBUS Active 
+  *           0: VBUS Active
   *           1: VBUS Inactive
   * @retval USBH Status
   */
 USBH_StatusTypeDef USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint8_t state)
 {
-#ifdef USE_USB_FS
-  if(state == 0)
-  {
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_SET);
-  }
-  else
-  {
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_RESET);
-  }
-  
-  HAL_Delay(200);
-#endif /* USE_USB_FS */
-  return USBH_OK;  
+  UNUSED(phost);
+  UNUSED(state);
+  return USBH_OK;
 }
 
 /**
   * @brief  Sets toggle for a pipe.
   * @param  phost: Host handle
-  * @param  pipe: Pipe index   
+  * @param  pipe: Pipe index
   * @param  toggle: toggle (0/1)
   * @retval USBH Status
   */
 USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe, uint8_t toggle)
 {
+
+  UNUSED(phost);
+
   if(hhcd.hc[pipe].ep_is_in)
   {
     hhcd.hc[pipe].toggle_in = toggle;
@@ -529,7 +397,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe, ui
   {
     hhcd.hc[pipe].toggle_out = toggle;
   }
-  return USBH_OK; 
+  return USBH_OK;
 }
 
 /**
@@ -540,8 +408,11 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe, ui
   */
 uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t pipe)
 {
+
+  UNUSED(phost);
+
   uint8_t toggle = 0;
-  
+
   if(hhcd.hc[pipe].ep_is_in)
   {
     toggle = hhcd.hc[pipe].toggle_in;
@@ -550,7 +421,7 @@ uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t pipe)
   {
     toggle = hhcd.hc[pipe].toggle_out;
   }
-  return toggle; 
+  return toggle;
 }
 
 /**
@@ -560,11 +431,7 @@ uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t pipe)
   */
 void USBH_Delay(uint32_t Delay)
 {
-#if (USBH_USE_OS == 1)
-  osDelay(Delay);
-#else
-  HAL_Delay(Delay);  
-#endif  
+  HAL_Delay(Delay);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -1,7 +1,9 @@
 #include "main.h"
 
 void USBH_UserProcess(USBH_HandleTypeDef* phost, uint8_t id) {
-    
+
+    UNUSED(phost);
+
     printf("USBH_UserProcess\n");
 
     switch (id) {
