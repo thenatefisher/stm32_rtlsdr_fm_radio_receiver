@@ -25,8 +25,8 @@ LDFLAGS += -lc_nano -lm
 ###################################################
 
 # rtl-sdr project
-CFLAGS_I += -I$(RES_DIR)/rtl-sdr
-RES_SRCS += $(shell find $(RES_DIR)/rtl-sdr -type f -name '*.c')
+CFLAGS_I += -I$(RES_DIR)/librtlsdr
+RES_SRCS += $(shell find $(RES_DIR)/librtlsdr -type f -name '*.c')
 
 # CMSIS
 CFLAGS_I += -I$(RES_DIR)/CMSIS/Device/ST/STM32F7xx/Include
