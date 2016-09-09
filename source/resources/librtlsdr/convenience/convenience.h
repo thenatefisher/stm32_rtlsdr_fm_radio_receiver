@@ -139,4 +139,3 @@ int verbose_reset_buffer(rtlsdr_dev_t *dev);
  */
 
 int verbose_device_search(char *s);
-

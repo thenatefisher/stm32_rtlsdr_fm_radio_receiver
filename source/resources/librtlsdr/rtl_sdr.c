@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#if 0
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
@@ -276,3 +276,4 @@ int main(int argc, char **argv)
 out:
 	return r >= 0 ? r : -r;
 }
+#endif
