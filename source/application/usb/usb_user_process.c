@@ -9,32 +9,32 @@ void USBH_UserProcess(USBH_HandleTypeDef* phost, uint8_t id) {
     switch (id) {
 
         case HOST_USER_SELECT_CONFIGURATION:
-            printf("USB: HOST_USER_SELECT_CONFIGURATION\n");
+            USBH_DbgLog("HOST_USER_SELECT_CONFIGURATION\n");
             break;
 
         case HOST_USER_CLASS_ACTIVE:
-            printf("USB: HOST_USER_CLASS_ACTIVE\n");
+            USBH_DbgLog("HOST_USER_CLASS_ACTIVE\n");
             break;
 
         case HOST_USER_CLASS_SELECTED:
-            printf("USB: HOST_USER_CLASS_SELECTED\n");
+            USBH_DbgLog("HOST_USER_CLASS_SELECTED\n");
             break;
 
         case HOST_USER_CONNECTION:
-            printf("USB: HOST_USER_CONNECTION\n");
+            USBH_DbgLog("HOST_USER_CONNECTION\n");
             break;
 
         case HOST_USER_DISCONNECTION:
-            isUSBConfigComplete = 0;
-            printf("USB: HOST_USER_DISCONNECTION\n");
+            usb_device_ready= 0;
+            USBH_DbgLog("HOST_USER_DISCONNECTION\n");
             break;
 
         case HOST_USER_UNRECOVERED_ERROR:
-            printf("USB: HOST_USER_UNRECOVERED_ERROR\n");
+            USBH_DbgLog("HOST_USER_UNRECOVERED_ERROR\n");
             break;
 
         default:
-            printf("USB: Default\n");
+            USBH_DbgLog("Default\n");
             break;
 
     }
