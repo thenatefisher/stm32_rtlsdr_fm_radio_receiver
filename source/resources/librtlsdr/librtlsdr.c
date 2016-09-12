@@ -1361,73 +1361,8 @@ const char *rtlsdr_get_device_name(uint32_t index)
 		return "";
 }
 
-int rtlsdr_get_device_usb_strings(uint32_t index, char *manufact,
-				   char *product, char *serial)
-{
-	int r = -2;
-	int i;
-	libusb_context *ctx;
-	libusb_device **list;
-	struct libusb_device_descriptor dd;
-	rtlsdr_dongle_t *device = NULL;
-	rtlsdr_dev_t devt;
-	uint32_t device_count = 0;
-	ssize_t cnt;
 
-	libusb_init(&ctx);
 
-	cnt = libusb_get_device_list(ctx, &list);
-
-	for (i = 0; i < cnt; i++) {
-		libusb_get_device_descriptor(list[i], &dd);
-
-		device = find_known_device(dd.idVendor, dd.idProduct);
-
-		if (device) {
-			device_count++;
-
-			if (index == device_count - 1) {
-				r = libusb_open(list[i], &devt.devh);
-				if (!r) {
-					r = rtlsdr_get_usb_strings(&devt,
-								   manufact,
-								   product,
-								   serial);
-					libusb_close(devt.devh);
-				}
-				break;
-			}
-		}
-	}
-
-	libusb_free_device_list(list, 1);
-
-	libusb_exit(ctx);
-
-	return r;
-}
-
-int rtlsdr_get_index_by_serial(const char *serial)
-{
-	int i, cnt, r;
-	char str[256];
-
-	if (!serial)
-		return -1;
-
-	cnt = rtlsdr_get_device_count();
-
-	if (!cnt)
-		return -2;
-
-	for (i = 0; i < cnt; i++) {
-		r = rtlsdr_get_device_usb_strings(i, NULL, NULL, str);
-		if (!r && !strcmp(serial, str))
-			return i;
-	}
-
-	return -3;
-}
 
 int rtlsdr_open(rtlsdr_dev_t **out_dev, uint32_t index)
 {
@@ -1444,77 +1379,15 @@ int rtlsdr_open(rtlsdr_dev_t **out_dev, uint32_t index)
 	memset(dev, 0, sizeof(rtlsdr_dev_t));
 	memcpy(dev->fir, fir_default, sizeof(fir_default));
 
-	libusb_init(&dev->ctx);
-
 	dev->dev_lost = 1;
-
-	cnt = libusb_get_device_list(dev->ctx, &list);
-
-	for (i = 0; i < cnt; i++) {
-		device = list[i];
-
-		libusb_get_device_descriptor(list[i], &dd);
-
-		if (find_known_device(dd.idVendor, dd.idProduct)) {
-			device_count++;
-		}
-
-		if (index == device_count - 1)
-			break;
-
-		device = NULL;
-	}
-
-	if (!device) {
-		r = -1;
-		goto err;
-	}
-
-	r = libusb_open(device, &dev->devh);
-	if (r < 0) {
-		libusb_free_device_list(list, 1);
-		fprintf(stderr, "usb_open error %d\n", r);
-		if(r == LIBUSB_ERROR_ACCESS)
-			fprintf(stderr, "Please fix the device permissions, e.g. "
-			"by installing the udev rules file rtl-sdr.rules\n");
-		goto err;
-	}
-
-	libusb_free_device_list(list, 1);
-
-	if (libusb_kernel_driver_active(dev->devh, 0) == 1) {
-		dev->driver_active = 1;
-
-#ifdef DETACH_KERNEL_DRIVER
-		if (!libusb_detach_kernel_driver(dev->devh, 0)) {
-			fprintf(stderr, "Detached kernel driver\n");
-		} else {
-			fprintf(stderr, "Detaching kernel driver failed!");
-			goto err;
-		}
-#else
-		fprintf(stderr, "\nKernel driver is active, or device is "
-				"claimed by second instance of librtlsdr."
-				"\nIn the first case, please either detach"
-				" or blacklist the kernel module\n"
-				"(dvb_usb_rtl28xxu), or enable automatic"
-				" detaching at compile time.\n\n");
-#endif
-	}
-
-	r = libusb_claim_interface(dev->devh, 0);
-	if (r < 0) {
-		fprintf(stderr, "usb_claim_interface error %d\n", r);
-		goto err;
-	}
-
+	dev->driver_active = 1;
 	dev->rtl_xtal = DEF_RTL_XTAL_FREQ;
 
 	/* perform a dummy write, if it fails, reset the device */
-	if (rtlsdr_write_reg(dev, USBB, USB_SYSCTL, 0x09, 1) < 0) {
-		fprintf(stderr, "Resetting device...\n");
-		libusb_reset_device(dev->devh);
-	}
+	// if (rtlsdr_write_reg(dev, USBB, USB_SYSCTL, 0x09, 1) < 0) {
+		// printf("Resetting device...\n");
+		// libusb_reset_device(dev->devh);
+	// }
 
 	rtlsdr_init_baseband(dev);
 	dev->dev_lost = 0;
@@ -1607,17 +1480,6 @@ found:
 
 	rtlsdr_set_i2c_repeater(dev, 0);
 
-	*out_dev = dev;
-
-	return 0;
-err:
-	if (dev) {
-		if (dev->ctx)
-			libusb_exit(dev->ctx);
-
-		free(dev);
-	}
-
 	return r;
 }
 
@@ -1634,23 +1496,6 @@ int rtlsdr_close(rtlsdr_dev_t *dev)
 
 		rtlsdr_deinit_baseband(dev);
 	}
-
-	libusb_release_interface(dev->devh, 0);
-
-#ifdef DETACH_KERNEL_DRIVER
-	if (dev->driver_active) {
-		if (!libusb_attach_kernel_driver(dev->devh, 0))
-			fprintf(stderr, "Reattached kernel driver\n");
-		else
-			fprintf(stderr, "Reattaching kernel driver failed!\n");
-	}
-#endif
-
-	libusb_close(dev->devh);
-
-	libusb_exit(dev->ctx);
-
-	free(dev);
 
 	return 0;
 }
@@ -1683,22 +1528,7 @@ static void LIBUSB_CALL _libusb_callback(struct libusb_transfer *xfer)
 			dev->cb(xfer->buffer, xfer->actual_length, dev->cb_ctx);
 
 		libusb_submit_transfer(xfer); /* resubmit transfer */
-		dev->xfer_errors = 0;
-	} else if (LIBUSB_TRANSFER_CANCELLED != xfer->status) {
-#ifndef _WIN32
-		if (LIBUSB_TRANSFER_ERROR == xfer->status)
-			dev->xfer_errors++;
 
-		if (dev->xfer_errors >= dev->xfer_buf_num ||
-		    LIBUSB_TRANSFER_NO_DEVICE == xfer->status) {
-#endif
-			dev->dev_lost = 1;
-			rtlsdr_cancel_async(dev);
-			fprintf(stderr, "cb transfer status: %d, "
-				"canceling...\n", xfer->status);
-#ifndef _WIN32
-		}
-#endif
 	}
 }
 
@@ -1767,6 +1597,8 @@ static int _rtlsdr_free_async_buffers(rtlsdr_dev_t *dev)
 int rtlsdr_read_async(rtlsdr_dev_t *dev, rtlsdr_read_async_cb_t cb, void *ctx,
 			  uint32_t buf_num, uint32_t buf_len)
 {
+	return 0;
+
 	unsigned int i;
 	int r = 0;
 	struct timeval tv = { 1, 0 };
