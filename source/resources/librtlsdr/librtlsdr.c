@@ -848,11 +848,7 @@ int rtlsdr_write_eeprom(rtlsdr_dev_t *dev, uint8_t *data, uint8_t offset, uint16
 
 		/* for some EEPROMs (e.g. ATC 240LC02) we need a delay
 		 * between write operations, otherwise they will fail */
-#ifdef _WIN32
-		Sleep(5);
-#else
-		usleep(5000);
-#endif
+		HAL_Delay(5000);
 	}
 
 	return 0;
@@ -1632,11 +1628,7 @@ int rtlsdr_close(rtlsdr_dev_t *dev)
 	if(!dev->dev_lost) {
 		/* block until all async operations have been completed (if any) */
 		while (RTLSDR_INACTIVE != dev->async_status) {
-#ifdef _WIN32
-			Sleep(1);
-#else
-			usleep(1000);
-#endif
+			HAL_Delay(4000);
 		}
 
 		rtlsdr_deinit_baseband(dev);
