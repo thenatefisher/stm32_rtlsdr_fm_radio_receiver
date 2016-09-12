@@ -1,3 +1,4 @@
+#include "fm_radio.h"
 #include "main.h"
 
 static void SystemClock_Config(void);
@@ -26,28 +27,36 @@ int main(void) {
     // init usb host process
     USBH_Start(&hUSBHost);
 
-    // begin application cyclic
+    // wait for connection from USB device
     while (1) {
 
         // usb host background task
         USBH_Process(&hUSBHost);
 
         // usb pipe init
-        if (hUSBHost.gState == HOST_CHECK_CLASS && !isUSBConfigComplete) {
+        if (hUSBHost.gState == HOST_CHECK_CLASS && !usb_device_ready) {
 
+            // attempt a connection on the control endpoint
+            // note: max packet size 64 bytes for FS and 512 bytes for HS
             InPipe = USBH_AllocPipe(&hUSBHost, USB_PIPE_NUMBER);
-
             USBH_StatusTypeDef status = USBH_OpenPipe(&hUSBHost,
-                          InPipe,
-                          USB_PIPE_NUMBER, // pipe number
-                          hUSBHost.device.address,
-                          hUSBHost.device.speed,
-                          USB_EP_TYPE_BULK,
-                          USBH_MAX_DATA_BUFFER); // max packet size:
-                                                 // 64 bytes for FS and 512 bytes for HS
+                                        InPipe,
+                                        USB_PIPE_NUMBER,
+                                        hUSBHost.device.address,
+                                        hUSBHost.device.speed,
+                                        USB_EP_TYPE_BULK,
+                                        USBH_MAX_DATA_BUFFER);
 
-            if (status == USBH_OK) isUSBConfigComplete = 1;
+            // continue connection attempt until successful
+            if (status == USBH_OK) {
+                usb_device_ready = 1;
+            }
 
+        }
+
+        if (usb_device_ready) {
+            // USB device connected, begin application
+            fmradio_process();
         }
 
     }
