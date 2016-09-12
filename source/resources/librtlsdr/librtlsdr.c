@@ -1294,14 +1294,16 @@ static rtlsdr_dongle_t *find_known_device(uint16_t vid, uint16_t pid)
 
 uint32_t rtlsdr_get_device_count(void)
 {
-	int i;
+	int i,r;
 	libusb_context *ctx;
 	libusb_device **list;
 	uint32_t device_count = 0;
 	struct libusb_device_descriptor dd;
 	ssize_t cnt;
 
-	libusb_init(&ctx);
+	r = libusb_init(&ctx);
+	if(r < 0)
+		return 0;
 
 	cnt = libusb_get_device_list(ctx, &list);
 
@@ -1321,7 +1323,7 @@ uint32_t rtlsdr_get_device_count(void)
 
 const char *rtlsdr_get_device_name(uint32_t index)
 {
-	int i;
+	int i,r;
 	libusb_context *ctx;
 	libusb_device **list;
 	struct libusb_device_descriptor dd;
@@ -1329,7 +1331,9 @@ const char *rtlsdr_get_device_name(uint32_t index)
 	uint32_t device_count = 0;
 	ssize_t cnt;
 
-	libusb_init(&ctx);
+	r = libusb_init(&ctx);
+	if(r < 0)
+		return "";
 
 	cnt = libusb_get_device_list(ctx, &list);
 
