@@ -126,6 +126,7 @@ struct rtlsdr_dev {
 	unsigned int xfer_errors;
 };
 
+struct rtlsdr_dev static_dev;
 void rtlsdr_set_gpio_bit(rtlsdr_dev_t *dev, uint8_t gpio, int val);
 static int rtlsdr_set_if_freq(rtlsdr_dev_t *dev, uint32_t freq);
 
@@ -1433,16 +1434,12 @@ int rtlsdr_open(rtlsdr_dev_t **out_dev, uint32_t index)
 	int r;
 	int i;
 	libusb_device **list;
-	rtlsdr_dev_t *dev = NULL;
+	rtlsdr_dev_t *dev = out_dev[0];
 	libusb_device *device = NULL;
 	uint32_t device_count = 0;
 	struct libusb_device_descriptor dd;
 	uint8_t reg;
 	ssize_t cnt;
-
-	dev = malloc(sizeof(rtlsdr_dev_t));
-	if (NULL == dev)
-		return -ENOMEM;
 
 	memset(dev, 0, sizeof(rtlsdr_dev_t));
 	memcpy(dev->fir, fir_default, sizeof(fir_default));
