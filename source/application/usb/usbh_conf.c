@@ -3,6 +3,7 @@
 #include "stm32746g_discovery.h"
 #include "usbh_core.h"
 #include "stdio.h"
+#include "trace.h"
 
 HCD_HandleTypeDef hhcd;
 
@@ -20,7 +21,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd)
 
   if(hhcd->Instance == USB_OTG_HS)
   {
-    printf("USB HS INIT\n");
+    DEBUG_PRINT("USB HS INIT\n");
     /* Configure USB HS GPIOs */
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -150,7 +151,7 @@ USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
   /* Set the LL driver parameters */
   hhcd.Instance = USB_OTG_HS;
   hhcd.Init.Host_channels = 11;
-  hhcd.Init.dma_enable = 0;
+  hhcd.Init.dma_enable = 0; // TODO: enable
   hhcd.Init.low_power_enable = 0;
   hhcd.Init.phy_itface = HCD_PHY_ULPI;
   hhcd.Init.Sof_enable = 0;

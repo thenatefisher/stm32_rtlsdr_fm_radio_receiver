@@ -6,7 +6,7 @@ static void SystemClock_Config(void);
 int main(void) {
 
     // verify semihosting active
-    printf("Starting Application\n");
+    DEBUG_PRINT("Starting Application\n");
 
     // enable cpu instruction line cache
     SCB_EnableICache();

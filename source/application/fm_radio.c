@@ -20,10 +20,10 @@ int fmradio_init() {
     int8_t dongle_open = rtlsdr_open(&dev, 0);
 
     if (dongle_open < 0) {
-        printf("Failed to open rtlsdr device (%i).\n", dongle_open);
+        DEBUG_PRINT("Failed to open rtlsdr device (%i).\n", dongle_open);
         return dongle_open;
     } else {
-        printf("Opened rtlsdr\n");
+        DEBUG_PRINT("Opened rtlsdr\n");
     }
 
     // Set the sample rate
@@ -48,11 +48,11 @@ int fmradio_init() {
     // Reset endpoint before we start reading from it (mandatory)
     verbose_reset_buffer(dev);
 
-    printf("Starting user app\n");
 
     usb_app_started = 1;
     curr_demod_buff = demod_bufferA;
     raw_buf_filling = raw_bufA;
+    DEBUG_PRINT("Starting user app\n");
 
     // begin capture radio data
     rtlsdr_read_sync(dev, raw_buf_filling, USBH_MAX_DATA_BUFFER, 0);
@@ -73,6 +73,7 @@ void fmradio_process() {
 
     raw_buf_complete = 0;
 
+    itm_print(3,0);
 
     // demodulate the completed raw buffer
     uint32_t demod_index = 0;

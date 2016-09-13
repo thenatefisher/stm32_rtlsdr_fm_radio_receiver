@@ -376,7 +376,7 @@ static int is_fvco_valid(uint32_t fvco_z)
 	/* check if the resulting fosc is valid */
 	if (fvco_z/1000 < E4K_FVCO_MIN_KHZ ||
 	    fvco_z/1000 > E4K_FVCO_MAX_KHZ) {
-		fprintf(stderr, "[E4K] Fvco %u invalid\n", fvco_z);
+		DEBUG_PRINT("[E4K] Fvco %u invalid\n", fvco_z);
 		return 0;
 	}
 
@@ -386,7 +386,7 @@ static int is_fvco_valid(uint32_t fvco_z)
 static int is_fosc_valid(uint32_t fosc)
 {
 	if (fosc < MHZ(16) || fosc > MHZ(30)) {
-		fprintf(stderr, "[E4K] Fosc %u invalid\n", fosc);
+		DEBUG_PRINT("[E4K] Fosc %u invalid\n", fosc);
 		return 0;
 	}
 
@@ -396,7 +396,7 @@ static int is_fosc_valid(uint32_t fosc)
 static int is_z_valid(uint32_t z)
 {
 	if (z > 255) {
-		fprintf(stderr, "[E4K] Z %u invalid\n", z);
+		DEBUG_PRINT("[E4K] Z %u invalid\n", z);
 		return 0;
 	}
 
@@ -503,7 +503,7 @@ uint32_t e4k_compute_pll_params(struct e4k_pll_params *oscp, uint32_t fosc, uint
 		}
 	}
 
-	//fprintf(stderr, "[E4K] Fint=%u, R=%u\n", intended_flo, r);
+	//DEBUG_PRINT("[E4K] Fint=%u, R=%u\n", intended_flo, r);
 
 	/* flo(max) = 1700MHz, R(max) = 48, we need 64bit! */
 	intended_fvco = (uint64_t)intended_flo * r;
@@ -587,7 +587,7 @@ int e4k_tune_freq(struct e4k_state *e4k, uint32_t freq)
 	/* check PLL lock */
 	rc = e4k_reg_read(e4k, E4K_REG_SYNTH1);
 	if (!(rc & 0x01)) {
-		fprintf(stderr, "[E4K] PLL not locked for %u Hz!\n", freq);
+		DEBUG_PRINT("[E4K] PLL not locked for %u Hz!\n", freq);
 		return -1;
 	}
 
@@ -876,7 +876,7 @@ int e4k_dc_offset_gen_table(struct e4k_state *e4k)
 		range_i = range & 0x3;
 		range_q = (range >> 4) & 0x3;
 
-		fprintf(stderr, "[E4K] Table %u I=%u/%u, Q=%u/%u\n",
+		DEBUG_PRINT("[E4K] Table %u I=%u/%u, Q=%u/%u\n",
 			i, range_i, offs_i, range_q, offs_q);
 
 		/* write into the table */

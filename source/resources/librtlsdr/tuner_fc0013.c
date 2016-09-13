@@ -333,7 +333,7 @@ int fc0013_set_params(void *dev, uint32_t freq, uint32_t bandwidth)
 	}
 
 	if ((reg[1] > 15) || (reg[2] < 0x0b)) {
-		fprintf(stderr, "[FC0013] no valid PLL combination "
+		DEBUG_PRINT("[FC0013] no valid PLL combination "
 				"found for %u Hz!\n", freq);
 		return -1;
 	}
