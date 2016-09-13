@@ -1,18 +1,18 @@
 #include "fm_radio.h"
 
+static struct FMRadio self;
 
 int fmradio_init() {
 
     dev = &static_dev;
-    usb_app_started = 1;
+    self.is_usb_app_started = 1;
     curr_demod_buff = demod_bufferA;
     raw_buf_filling = raw_bufA;
-    gain = 0;
-    ppm_error = 0;
-    frequency = 99700000;
-    samp_rate = RTL_SAMPLERATE;
-    raw_buf_remain_bytes = RAW_BUFFER_BYTES;
-    raw_buf_complete = 0;
+    self.tuner_ppm_error = 0;
+    self.tuner_frequency = 99700000;
+    self.adc_samp_rate = RTL_SAMPLERATE;
+    self.raw_buf_remain_bytes = RAW_BUFFER_BYTES;
+    self.is_raw_buf_complete = 0;
 
     int8_t dongle_open = rtlsdr_open(&dev, 0);
 
@@ -24,23 +24,16 @@ int fmradio_init() {
     }
 
     // Set the sample rate
-    verbose_set_sample_rate(dev, samp_rate);
+    verbose_set_sample_rate(dev, self.adc_samp_rate);
 
     // Set the frequency
-    verbose_set_frequency(dev, frequency);
+    verbose_set_frequency(dev, self.tuner_frequency);
 
-    if (0 == gain) {
-        // Enable automatic gain
-        verbose_auto_gain(dev);
-
-    } else {
-        // Enable manual gain
-        gain = nearest_gain(dev, gain);
-        verbose_gain_set(dev, gain);
-    }
+    // set auto gain
+    verbose_auto_gain(dev);
 
     // set ppm error
-    verbose_ppm_set(dev, ppm_error);
+    verbose_ppm_set(dev, self.tuner_ppm_error);
 
     // Reset endpoint before we start reading from it (mandatory)
     verbose_reset_buffer(dev);
@@ -57,16 +50,18 @@ int fmradio_init() {
 void fmradio_process() {
 
     // run init
-    if (!usb_app_started) fmradio_init();
+    if (!self.is_usb_app_started) fmradio_init();
 
     // wait for raw buffer to fill completely
-    if (!raw_buf_complete) return;
+    if (!self.is_raw_buf_complete) return;
 
-    raw_buf_complete = 0;
+    // reset buffer completion flag
+    self.is_raw_buf_complete = 0;
 
+    // trace event
     trace_itm_print(3,0);
 
-    // demodulate the completed raw buffer
+    // demodulate and downsample the completed raw buffer
     uint32_t demod_index = 0;
     volatile uint8_t* raw_buf_complete = (raw_buf_filling == raw_bufA) ? raw_bufB : raw_bufA;
 
@@ -81,11 +76,15 @@ void fmradio_process() {
         s2[0] = (int16_t)raw_buf_complete[sample_index + 2] - 127; // I
         s2[1] = (int16_t)raw_buf_complete[sample_index + 3] - 127; // Q
 
-        int16_t pcm = polar_disc_fast(s2[0], s2[1],
+        // find the phase shift in these two samples (this is the essence of the FM demod)
+        int16_t pcm = fmradio_polar_disc(s2[0], s2[1],
                                       s1[0], s1[1]);
 
         pcm = pcm * 8.0f / PI; // scale from radians
 
+        // TODO: dc block filter and low pass filter
+
+        // note: audio codec currently expects stereo sample buffer
         curr_demod_buff[demod_index++] = pcm; // right channel
         curr_demod_buff[demod_index++] = pcm; // left channel
 
@@ -107,29 +106,30 @@ void HAL_HCD_HC_NotifyURBChange_Callback(
     UNUSED(hhcd);
     UNUSED(chnum);
 
-    if (!usb_app_started) { return; }
+    if (!self.is_usb_app_started) { return; }
 
+    // only process when a USB transaction is complete
     if (urb_state == URB_DONE) {
 
         // decrement bytes remaining
-        raw_buf_remain_bytes -= USBH_MAX_DATA_BUFFER;
+        self.raw_buf_remain_bytes -= USBH_MAX_DATA_BUFFER;
 
         // switch buffers?
-        if (raw_buf_remain_bytes == 0) {
+        if (self.raw_buf_remain_bytes == 0) {
 
             // reset remaining bytes count
-            raw_buf_remain_bytes = RAW_BUFFER_BYTES;
+            self.raw_buf_remain_bytes = RAW_BUFFER_BYTES;
 
             // swap double buffer pointer
             raw_buf_filling = (raw_buf_filling == raw_bufA) ? raw_bufB : raw_bufA;
 
             // signal buffer is ready for demod
-            raw_buf_complete = 1;
+            self.is_raw_buf_complete = 1;
 
         }
 
         // start another transaction
-        uint32_t buf_offset = RAW_BUFFER_BYTES - raw_buf_remain_bytes;
+        uint32_t buf_offset = RAW_BUFFER_BYTES - self.raw_buf_remain_bytes;
         rtlsdr_read_sync(dev,
                          (void*)(raw_buf_filling + buf_offset),
                          USBH_MAX_DATA_BUFFER,
