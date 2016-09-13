@@ -83,15 +83,16 @@ void fmradio_process() {
 
         int16_t pcm = polar_disc_fast(s2[0], s2[1],
                                       s1[0], s1[1]);
-        pcm = pcm * 8.0f / PI;
 
-        curr_demod_buff[demod_index++] = pcm;
-        curr_demod_buff[demod_index++] = pcm;
+        pcm = pcm * 8.0f / PI; // scale from radians
+
+        curr_demod_buff[demod_index++] = pcm; // right channel
+        curr_demod_buff[demod_index++] = pcm; // left channel
 
     }
 
     // play demodulated buffer
-    AUDIO_PLAYER_Play_Segment(curr_demod_buff, 2*demod_index);
+    audio_set_next_segment((int16_t*)curr_demod_buff, 2*demod_index);
 
     // swap demod buffers
     curr_demod_buff = (curr_demod_buff == demod_bufferA) ? demod_bufferB : demod_bufferA;

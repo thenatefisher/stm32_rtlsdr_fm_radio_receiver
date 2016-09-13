@@ -5,13 +5,15 @@
 #include "stdio.h"
 #include "trace.h"
 
-static volatile uint32_t uwVolume;
-uint16_t* next_seg;
-uint32_t next_seg_sz;
-uint8_t playing;
+struct AudioPlayer {
+    uint8_t volume;
+    uint8_t is_playing;
+    int16_t* next_segment_ptr;
+    size_t next_segment_bytes;
+};
 
-int8_t AUDIO_PLAYER_Init(void);
-void AUDIO_PLAYER_Stop(void);
-void AUDIO_PLAYER_Play_Segment(volatile int16_t* seg, uint32_t bytes);
+int8_t audio_init(void);
+void audio_stop(void);
+void audio_set_next_segment(int16_t* seg, uint32_t bytes);
 
-#endif 
+#endif

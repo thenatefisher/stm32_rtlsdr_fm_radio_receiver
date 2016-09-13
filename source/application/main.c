@@ -19,9 +19,11 @@ int main(void) {
     // configure the system clock to 216 MHz
     SystemClock_Config();
 
+    // configure trace function
     config_itm();
 
-    AUDIO_PLAYER_Init();
+    // init audio device
+    audio_init();
 
     // init usb host library, set host process signaling
     //  callback to USBH_UserProcess(); set 'driver id' to 0
@@ -57,6 +59,7 @@ int main(void) {
 
         }
 
+        // only execute application after USB control pipe is configured
         if (usb_device_ready) {
 
             // USB device connected, begin application
