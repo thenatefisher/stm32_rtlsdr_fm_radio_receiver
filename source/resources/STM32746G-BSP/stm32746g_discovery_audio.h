@@ -46,7 +46,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 /* Include audio component Driver */
-#include "../Components/wm8994/wm8994.h"
+#include "wm8994.h"
 #include "stm32746g_discovery.h"
 
 /** @addtogroup BSP
