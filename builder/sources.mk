@@ -36,6 +36,17 @@ CFLAGS_I += -I$(RES_DIR)/CMSIS/Include
 CFLAGS_I += -I$(RES_DIR)/STM32F7xx_HAL_Driver/Inc
 RES_SRCS += $(shell find $(RES_DIR)/STM32F7xx_HAL_Driver/Src -type f -name '*.c')
 
+# Audio Codec
+CFLAGS_I += -I$(RES_DIR)
+CFLAGS_I += -I$(RES_DIR)/Components/Common
+CFLAGS_I += -I$(RES_DIR)/Components/wm8994
+CFLAGS_I += -I$(RES_DIR)/Components/n25q128a
+RES_SRCS += $(RES_DIR)/Components/wm8994/wm8994.c
+
+# ST PDM Filter
+CFLAGS_I += -I$(RES_DIR)/STM32_Audio
+LDFLAGS += -L $(RES_DIR)/STM32_Audio -lPDMFilter_CM7F_GCC
+
 # BSP
 CFLAGS_I += -I$(RES_DIR)/STM32746G-BSP
 RES_SRCS += $(shell find $(RES_DIR)/STM32746G-BSP -type f -name '*.c')
