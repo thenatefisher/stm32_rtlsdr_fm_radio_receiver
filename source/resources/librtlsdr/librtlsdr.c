@@ -1534,7 +1534,7 @@ int rtlsdr_reset_buffer(rtlsdr_dev_t* dev) {
     return 0;
 }
 
-int rtlsdr_read_sync(rtlsdr_dev_t* dev, void* buf, int len, int* n_read) {
+int rtlsdr_read_sync(rtlsdr_dev_t* dev, volatile void* buf, int len, int* n_read) {
     if (!dev)
     { return -1; }
 
