@@ -64,7 +64,7 @@ void fmradio_process() {
 
     raw_buf_complete = 0;
 
-    itm_print(3,0);
+    trace_itm_print(3,0);
 
     // demodulate the completed raw buffer
     uint32_t demod_index = 0;

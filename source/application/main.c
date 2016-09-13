@@ -20,7 +20,7 @@ int main(void) {
     SystemClock_Config();
 
     // configure trace function
-    config_itm();
+    trace_config();
 
     // init audio device
     audio_init();
