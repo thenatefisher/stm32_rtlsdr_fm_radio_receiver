@@ -1,4 +1,3 @@
-#include "fm_radio.h"
 #include "main.h"
 
 static void SystemClock_Config(void);
@@ -19,6 +18,10 @@ int main(void) {
 
     // configure the system clock to 216 MHz
     SystemClock_Config();
+
+    config_itm();
+
+    AUDIO_PLAYER_Init();
 
     // init usb host library, set host process signaling
     //  callback to USBH_UserProcess(); set 'driver id' to 0
@@ -55,8 +58,10 @@ int main(void) {
         }
 
         if (usb_device_ready) {
+
             // USB device connected, begin application
             fmradio_process();
+
         }
 
     }
@@ -136,5 +141,38 @@ static void SystemClock_Config(void) {
 
     if (ret != HAL_OK) {
         while (1) { ; }
+    }
+}
+
+void BSP_AUDIO_OUT_ClockConfig(SAI_HandleTypeDef* hsai, uint32_t AudioFreq, void* Params) {
+    RCC_PeriphCLKInitTypeDef RCC_ExCLKInitStruct;
+
+    HAL_RCCEx_GetPeriphCLKConfig(&RCC_ExCLKInitStruct);
+
+    /* Set the PLL configuration according to the audio frequency */
+    if ((AudioFreq == AUDIO_FREQUENCY_11K) || (AudioFreq == AUDIO_FREQUENCY_22K) || (AudioFreq == AUDIO_FREQUENCY_44K)) {
+        /* Configure PLLSAI prescalers */
+        /*  PLLI2S_VCO: VCO_429M
+            SAI_CLK(first level) = PLLI2S_VCO/PLLSAIQ = 429/2 = 214.5 Mhz
+            SAI_CLK_x = SAI_CLK(first level)/PLLI2SDivQ = 214.5/19 = 11.289 Mhz */
+        RCC_ExCLKInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SAI2;
+        RCC_ExCLKInitStruct.Sai2ClockSelection = RCC_SAI2CLKSOURCE_PLLI2S;
+        RCC_ExCLKInitStruct.PLLI2S.PLLI2SP = 8;
+        RCC_ExCLKInitStruct.PLLI2S.PLLI2SN = 429;
+        RCC_ExCLKInitStruct.PLLI2S.PLLI2SQ = 2;
+        RCC_ExCLKInitStruct.PLLI2SDivQ = 19;
+        HAL_RCCEx_PeriphCLKConfig(&RCC_ExCLKInitStruct);
+
+    } else { /* AUDIO_FREQUENCY_8K, AUDIO_FREQUENCY_16K, AUDIO_FREQUENCY_48K, AUDIO_FREQUENCY_96K */
+        /*  SAI clock config
+            PLLI2S_VCO: VCO_344M
+            SAI_CLK(first level) = PLLI2S_VCO/PLLSAIQ = 344/7 = 49.142 Mhz
+            SAI_CLK_x = SAI_CLK(first level)/PLLI2SDivQ = 49.142/1 = 49.142 Mhz */
+        RCC_ExCLKInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SAI2;
+        RCC_ExCLKInitStruct.Sai2ClockSelection = RCC_SAI2CLKSOURCE_PLLI2S;
+        RCC_ExCLKInitStruct.PLLI2S.PLLI2SN = 344;
+        RCC_ExCLKInitStruct.PLLI2S.PLLI2SQ = 7;
+        RCC_ExCLKInitStruct.PLLI2SDivQ = 1;
+        HAL_RCCEx_PeriphCLKConfig(&RCC_ExCLKInitStruct);
     }
 }

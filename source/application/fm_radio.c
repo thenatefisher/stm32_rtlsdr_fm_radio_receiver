@@ -1,21 +1,18 @@
 #include "fm_radio.h"
 
 
-int32_t gain = 0;
-int32_t ppm_error = 0;
-uint32_t frequency = 99700000;
-uint32_t samp_rate = RTL_SAMPLERATE;
-int32_t raw_buf_remain_bytes = RAW_BUFFER_BYTES;
-volatile uint8_t raw_buf_complete = 0;
-volatile uint8_t usb_app_started = 0;
-rtlsdr_dev_t *dev;
-extern rtlsdr_dev_t static_dev;
-
-void fmradio_process();
-
 int fmradio_init() {
 
     dev = &static_dev;
+    usb_app_started = 1;
+    curr_demod_buff = demod_bufferA;
+    raw_buf_filling = raw_bufA;
+    gain = 0;
+    ppm_error = 0;
+    frequency = 99700000;
+    samp_rate = RTL_SAMPLERATE;
+    raw_buf_remain_bytes = RAW_BUFFER_BYTES;
+    raw_buf_complete = 0;
 
     int8_t dongle_open = rtlsdr_open(&dev, 0);
 
@@ -48,10 +45,6 @@ int fmradio_init() {
     // Reset endpoint before we start reading from it (mandatory)
     verbose_reset_buffer(dev);
 
-
-    usb_app_started = 1;
-    curr_demod_buff = demod_bufferA;
-    raw_buf_filling = raw_bufA;
     DEBUG_PRINT("Starting user app\n");
 
     // begin capture radio data
@@ -66,10 +59,8 @@ void fmradio_process() {
     // run init
     if (!usb_app_started) fmradio_init();
 
-    // reset itm cycle count
-
     // wait for raw buffer to fill completely
-    while (!raw_buf_complete);
+    if (!raw_buf_complete) return;
 
     raw_buf_complete = 0;
 
@@ -95,11 +86,12 @@ void fmradio_process() {
         pcm = pcm * 8.0f / PI;
 
         curr_demod_buff[demod_index++] = pcm;
+        curr_demod_buff[demod_index++] = pcm;
 
     }
 
     // play demodulated buffer
-    // play_segment(curr_demod_buff, 2*demod_index);
+    AUDIO_PLAYER_Play_Segment(curr_demod_buff, 2*demod_index);
 
     // swap demod buffers
     curr_demod_buff = (curr_demod_buff == demod_bufferA) ? demod_bufferB : demod_bufferA;
@@ -123,7 +115,6 @@ void HAL_HCD_HC_NotifyURBChange_Callback(
 
         // switch buffers?
         if (raw_buf_remain_bytes == 0) {
-
 
             // reset remaining bytes count
             raw_buf_remain_bytes = RAW_BUFFER_BYTES;
