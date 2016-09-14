@@ -10,13 +10,13 @@
 #include "fm_radio.h"
 #include "audio_player.h"
 
-#define USB_PIPE_NUMBER (0x81)
+#define USB_PIPE_NUMBER 0x81
 #define KILOBYTES 1024
 #define RAW_BUFFER_BYTES (25*KILOBYTES)
 #define SIZEOF_DEMOD_BUF_EL 2
 #define DEMOD_BUFF_BYTES (RAW_BUFFER_BYTES/SIZEOF_DEMOD_BUF_EL)
-#define DOWNSAMPLE 30
-#define RTL_SAMPLERATE 960000
+#define DOWNSAMPLE 15
+#define RTL_SAMPLERATE 240000
 
 volatile uint8_t raw_bufA[RAW_BUFFER_BYTES];
 volatile uint8_t raw_bufB[RAW_BUFFER_BYTES];

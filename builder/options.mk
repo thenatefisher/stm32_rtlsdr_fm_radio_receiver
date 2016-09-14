@@ -9,7 +9,7 @@ CFLAGS  += $(ARCH)
 
 # compile using c11, all warnings, output listing
 C_APP_FLAGS += -std=c11
-C_APP_FLAGS += -Werror -Wall -Wextra
+C_APP_FLAGS += -Wall -Wextra
 C_APP_FLAGS += -Wa,-ashld=$(LST_DIR)/$(@F:.o=.lst)
 
 # ST HAL settings

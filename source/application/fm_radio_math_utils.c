@@ -32,11 +32,13 @@ int32_t fmradio_atan2(int32_t y, int32_t x) {
 // fm demodulation math taken from librtlsdr
 int32_t fmradio_polar_disc(int32_t ar, int32_t aj, int32_t br, int32_t bj) {
 
-    int32_t cr, cj;
+    // complex multiply first sample with
+    // second sample flipped over the real axis
+    // (ar+aj) * (br-bj)
+    int32_t cr = ar * br - aj * -bj;
+    int32_t cj = aj * br + ar * -bj;
 
-    // complex multiply
-    cr = ar * br - aj * bj;
-    cj = aj * br + ar * bj;
-
+    // find angle of resultant
     return fmradio_atan2(cj, cr);
+    
 }

@@ -3,7 +3,7 @@
 
 #include "stm32f7xx_hal.h"
 
-#if 1
+#if 0
 #define DEBUG_PRINT(...) printf(__VA_ARGS__)
 #else
 #define DEBUG_PRINT(...)

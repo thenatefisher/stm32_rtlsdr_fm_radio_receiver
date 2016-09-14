@@ -7,7 +7,7 @@ int8_t audio_init(void) {
     self.volume = 70;
     self.is_playing = 0;
 
-    if (BSP_AUDIO_OUT_Init(OUTPUT_DEVICE_BOTH, self.volume, I2S_AUDIOFREQ_32K) == AUDIO_OK) {
+    if (BSP_AUDIO_OUT_Init(OUTPUT_DEVICE_BOTH, self.volume, I2S_AUDIOFREQ_16K) == AUDIO_OK) {
 
         BSP_AUDIO_OUT_SetAudioFrameSlot(CODEC_AUDIOFRAME_SLOT_02);
 

@@ -77,8 +77,7 @@ void fmradio_process() {
         s2[1] = (int16_t)raw_buf_complete[sample_index + 3] - 127; // Q
 
         // find the phase shift in these two samples (this is the essence of the FM demod)
-        int16_t pcm = fmradio_polar_disc(s2[0], s2[1],
-                                      s1[0], s1[1]);
+        int16_t pcm = fmradio_polar_disc(s2[0], s2[1], s1[0], s1[1]);
 
         pcm = pcm * 8.0f / PI; // scale from radians
 

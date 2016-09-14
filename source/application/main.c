@@ -147,7 +147,14 @@ static void SystemClock_Config(void) {
     }
 }
 
-void BSP_AUDIO_OUT_ClockConfig(SAI_HandleTypeDef* hsai, uint32_t AudioFreq, void* Params) {
+void BSP_AUDIO_OUT_ClockConfig(SAI_HandleTypeDef* hsai,
+                            uint32_t AudioFreq,
+                            void* Params)
+{
+
+    UNUSED(Params);
+    UNUSED(hsai);
+
     RCC_PeriphCLKInitTypeDef RCC_ExCLKInitStruct;
 
     HAL_RCCEx_GetPeriphCLKConfig(&RCC_ExCLKInitStruct);
